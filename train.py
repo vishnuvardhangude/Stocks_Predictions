@@ -5,6 +5,8 @@ import argparse
 from sklearn.preprocessing import MinMaxScaler
 from sympy import im
 import pandas as pd
+import torch
+import numpy as np
 
 from cfg import parse_cfg
 from DataUtil import getStockData
@@ -74,9 +76,38 @@ def main():
     original = scaler.inverse_transform(price['Close'].values.reshape(-1,1))
 
     plotPredictions(y_train_pred, y_test_pred, price, original, lookback)
+
+    predictions = predictNextTenDays(price.tail(30), model)
+    predict_next_10 = scaler.inverse_transform(predictions)
+    print("price of "+tickerCode+ " for the next 10 days:")
+    print(predict_next_10)
 # #     print(data.head())
     
 
+def predictNextTenDays(price, model):
+    x_test_new = (price).to_numpy()
+    x_test_new = x_test_new.reshape((1, x_test_new.shape[0], 1))
+    # y_test = data[train_set_size:,-1,:]
+
+    x_test_tens = torch.from_numpy(x_test_new).type(torch.Tensor)
+    x_test_tens.size()
+
+    # make predictions
+    pred = []
+    for i in range(1, 10):
+        y_test_pred_new = model(x_test_tens)
+        
+        x_test_new = np.append(x_test_new, y_test_pred_new.detach().numpy())
+        x_test_new = x_test_new.reshape((1, x_test_new.shape[0], 1))
+        x_test_new = x_test_new[:, 1:, :]
+        x_test_tens = torch.from_numpy(x_test_new).type(torch.Tensor)
+    #     print(x_test_tens)
+        
+        y_test_pred_new = y_test_pred_new.detach().numpy()
+        # print(y_test_pred_new)
+        pred.append([y_test_pred_new[0][0]])
+        
+    return pred
 
 def invertPrediction(y_train_pred, x_test, model):
     # make predictions
@@ -89,10 +120,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--ticker', '-t',
-        type=str, default='GOOGL', help='data definition file')
+        type=str, default='GOOGL', help='Enter Yahoo Finance Ticker of the stock')
 
     parser.add_argument('--config', '-c',
-        type=str, default='stk.cfg', help='network configuration file')
+        type=str, default='stk.cfg', help='configuration file')
         
 
     FLAGS, _ = parser.parse_known_args()
