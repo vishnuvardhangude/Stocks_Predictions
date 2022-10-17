@@ -5,3 +5,5 @@ Predict the stock values using the GRU (Gated Recurrent Unit)
 ```
 python train.py --ticker GOOGL --config stk.cfg
 ```
+
+The model will predict the stock values of the next ten days
