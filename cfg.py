@@ -36,7 +36,3 @@ def parse_cfg(cfgfile):
 
 if __name__ == '__main__':
     import sys
-    # blocks = parse_cfg('cfg/yolo.cfg')
-    # if len(sys.argv) == 2:
-    #     blocks = parse_cfg(sys.argv[1])
-    # print_cfg(blocks)
